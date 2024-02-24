@@ -1,0 +1,41 @@
+version: '3.4'
+services:
+
+  minios3test:
+    image: minios3test
+    build:
+      context: "."
+      dockerfile: ModelsApp.S3/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: '8080'
+    ports:
+    - 8080:8080
+    depends_on:
+    - minio
+
+  minio:
+    image: quay.io/minio/minio
+    ports:
+    - 9000:9000
+    - 9001:9001
+    networks:
+      minionetwork:
+        aliases: 
+        - minio
+    volumes:
+    - minio_data:/dataS
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: '1234567890'
+      MINIO_DEFAULT_BUCKETS: testbucket
+    restart: always
+    command: server /data --console-address :9001
+
+
+networks:
+  minionetwork:
+    driver: bridge
+
+volumes:
+  minio_data: 

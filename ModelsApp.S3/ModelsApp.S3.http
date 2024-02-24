@@ -1,0 +1,6 @@
+@ModelsApp.S3_HostAddress = http://localhost:8080
+
+GET {{ModelsApp.S3_HostAddress}}/storage/getBucketUrl/
+Accept: application/json'
+
+###
