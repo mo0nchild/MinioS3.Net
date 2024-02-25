@@ -43,9 +43,12 @@ namespace MinioS3Test.Controllers
                     Method = HttpMethod.Get,
                 });
                 if (!result.IsSuccessStatusCode) return this.BadRequest("Не удалось обработать");
-                this.logger.LogInformation((await result.Content.ReadAsByteArrayAsync()).Length.ToString());
+
+                var resultData = (await result.Content.ReadAsByteArrayAsync());
+                this.logger.LogInformation(resultData.Length.ToString());
+
+                return this.File(resultData, "application/octet-stream", "data.png");
             }
-            return this.Ok("Данные были получены");
         }
         [Route("getBuckets"), HttpGet] 
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
@@ -98,10 +101,8 @@ namespace MinioS3Test.Controllers
         }
         [Route("getUrl"), HttpPost]
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetFileUrl(/*string fileName, string bucketName*/)
+        public async Task<IActionResult> GetFileUrl(string fileName, string bucketName)
         {
-            var fileName = "myimage.png";
-            var bucketName = "testbucket";
             using (var minioClient = this.minioFactory.CreateClient())
             {
                 var presignedGetArgs = new PresignedGetObjectArgs()
