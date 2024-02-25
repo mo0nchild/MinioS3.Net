@@ -7,6 +7,7 @@ using System.Net.Mime;
 using System.Security.AccessControl;
 using CommunityToolkit.HighPerformance.Buffers;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace MinioS3Test.Controllers
 {
@@ -30,21 +31,37 @@ namespace MinioS3Test.Controllers
         {
             return new OkObjectResult(new { status = "all good" });
         }
-        [Route("getBuckets"), HttpGet]
-        [ProducesResponseType(typeof(List<string>), StatusCodes.Status200OK)]
+        [Route("checkPresignedUrl"), HttpGet]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        public async Task<IActionResult> CheckPresignedUrl(string url, [FromServices] IHttpClientFactory factory)
+        {
+            using (var client = factory.CreateClient("ApiClient"))
+            {
+                var result = await client.SendAsync(new HttpRequestMessage()
+                {
+                    RequestUri = new Uri(url),
+                    Method = HttpMethod.Get,
+                });
+                if (!result.IsSuccessStatusCode) return this.BadRequest("Не удалось обработать");
+                this.logger.LogInformation((await result.Content.ReadAsByteArrayAsync()).Length.ToString());
+            }
+            return this.Ok("Данные были получены");
+        }
+        [Route("getBuckets"), HttpGet] 
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetBuckets()
         {
             using (var minioClient = this.minioFactory.CreateClient())
             {
                 var getListBucketsTask = await minioClient.ListBucketsAsync();
-                var results = new List<string>();
+                if (getListBucketsTask == null) return this.BadRequest("Корзины не найдены");
+
                 foreach (var bucket in getListBucketsTask.Buckets)
                 {
+                    if (bucket == null) continue;
                     this.logger.LogInformation(bucket.Name + " " + bucket.CreationDateDateTime);
-                    results.Add(bucket.Name);
                 }
-                if (results.Count <= 0) return this.BadRequest();
-                return this.Ok(results);
+                return this.Ok("Корзины найдены");
             }
         }
         [Route("uploadFile"), HttpPost]
@@ -69,18 +86,22 @@ namespace MinioS3Test.Controllers
                     var putObjectArgs = new PutObjectArgs()
                         .WithBucket(bucketName)
                         .WithStreamData(requestData)
+                        .WithContentType("application/octet-stream")
                         .WithObject(formFile.FileName)
                         .WithObjectSize(formFile.Length);
 
-                    await minioClient.PutObjectAsync(putObjectArgs);
+                    try { await minioClient.PutObjectAsync(putObjectArgs); }
+                    catch (Exception errorInfo) { return this.BadRequest($"Ошибка добавления: {errorInfo.Message}"); }
                 }
                 return this.Ok("Файл был загружен");
             }
         }
         [Route("getUrl"), HttpPost]
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetFileUrl(string fileName, string bucketName)
+        public async Task<IActionResult> GetFileUrl(/*string fileName, string bucketName*/)
         {
+            var fileName = "myimage.png";
+            var bucketName = "testbucket";
             using (var minioClient = this.minioFactory.CreateClient())
             {
                 var presignedGetArgs = new PresignedGetObjectArgs()

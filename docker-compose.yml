@@ -11,8 +11,12 @@ services:
       ASPNETCORE_HTTP_PORTS: '8080'
     ports:
     - 8080:8080
+    links:
+    - "minio:minio"
     depends_on:
     - minio
+    networks:
+    - minionetwork
 
   minio:
     image: quay.io/minio/minio
@@ -24,7 +28,7 @@ services:
         aliases: 
         - minio
     volumes:
-    - minio_data:/dataS
+    - minio_data:/data
     environment:
       MINIO_ROOT_USER: admin
       MINIO_ROOT_PASSWORD: '1234567890'
@@ -35,7 +39,13 @@ services:
 
 networks:
   minionetwork:
+    ipam:
+        driver: default
+        config:
+        - gateway: 172.24.0.1
+          subnet: 172.24.0.0/24
     driver: bridge
+  
 
 volumes:
   minio_data: 

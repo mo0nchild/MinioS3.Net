@@ -7,11 +7,14 @@ namespace ModelsApp.S3
 {
     public class Program
     {
-        public static readonly string S3Endpoint = "host.docker.internal:9000";
+        //public static readonly string S3Endpoint = "host.docker.internal:9000";
         //public static readonly string S3Endpoint = "172.24.0.2:9000";
-        //public static readonly string S3Endpoint = "minio:9000";
+        public static readonly string S3Endpoint = "minio:9000";
+
         public static readonly string S3AccessKey = "apiclient";
         public static readonly string S3SecretKey = "1234567890";
+        //public static readonly string S3AccessKey = "2RZoLVv5dwcDFKuFKtsh";
+        //public static readonly string S3SecretKey = "WDgfJzHsLp0UsU0LojACmsHi5ZPk3c20SJonTZp8";
 
         public static void Main(string[] args)
         {
@@ -24,6 +27,10 @@ namespace ModelsApp.S3
                 options.WithEndpoint(S3Endpoint);
                 options.WithCredentials(S3AccessKey, S3SecretKey);
                 options.WithSSL(false);
+            });
+            builder.Services.AddHttpClient("ApiClient", options =>
+            {
+                //options.BaseAddress = new Uri(@"http://minio:9000");
             });
             builder.Services.AddSwaggerGen(options =>
             {

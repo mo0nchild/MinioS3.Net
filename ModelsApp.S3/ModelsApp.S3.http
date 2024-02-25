@@ -4,3 +4,6 @@ GET {{ModelsApp.S3_HostAddress}}/storage/getBucketUrl/
 Accept: application/json'
 
 ###
+
+GET http://localhost:9000/testbucket/myimage.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=4EF2D24ID5KT2RNOJQ72%2F20240224%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240224T153956Z&X-Amz-Expires=43200&X-Amz-Security-Token=eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NLZXkiOiI0RUYyRDI0SUQ1S1QyUk5PSlE3MiIsImV4cCI6MTcwODgyMTg2MiwicGFyZW50IjoiYWRtaW4ifQ.MM6hUW8VTMutmHwCZyRnVmBt4-P9KqLWNwJRzCGovjni8fGsvHLyYP_KmoUWH9ahF6mdJRJDWPlm3YlJ2PPCzg&X-Amz-SignedHeaders=host&versionId=null&X-Amz-Signature=9458d5d2bd0000a5ef7284856f0f84f43fe30b90ee6f524596bd585f229b4d5d
+Accept: application/json
